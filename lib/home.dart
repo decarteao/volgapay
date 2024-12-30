@@ -19,12 +19,22 @@ class _HomeState extends State<Home> {
     ..loadRequest(Uri.parse(BASE_URL))
     ..setBackgroundColor(Colors.white);
 
+  final scrollController = ScrollController();
+
   // funcoes da classe
   Future<List> inicializarNfc() async {
     // verificar disponiblidade do NFC no celular
     bool isActive = await NfcManager.instance.isAvailable();
     // continuar
     return [];
+  }
+  Future<void> refreshPage() async{
+    try{
+      await wvc.clearCache();
+      wvc.reload();
+    }catch(_){
+      //
+    }
   }
   fecharNfc(){
     // fechar o NFC se tiver activo
@@ -50,7 +60,19 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: WebViewWidget(controller: wvc,),
+        child: RefreshIndicator(
+          onRefresh: refreshPage,
+          child: ListView(
+            controller: scrollController,
+            physics: AlwaysScrollableScrollPhysics(),
+            children: [
+              SizedBox(
+                height: MediaQuery.of(context).size.height,
+                child: WebViewWidget(controller: wvc,),
+              )
+            ],
+          ),
+        ),
       )
     );
   }
